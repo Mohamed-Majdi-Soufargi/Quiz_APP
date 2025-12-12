@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Brain } from 'lucide-react';
+import { signUp } from '../authService';
 
 function Signup() {
   const navigate = useNavigate();
@@ -8,11 +9,53 @@ function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add Firebase auth logic here
-    console.log('Signup:', { name, email, password, role });
+    setLoading(true);
+    setError('');
+
+    // Basic validation
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Create new user account
+      const result = await signUp(email, password, name, role);
+      
+      if (result.success) {
+        // Navigate to appropriate dashboard
+        if (role === 'teacher') {
+          navigate('/teacher-dashboard');
+        } else {
+          navigate('/student-dashboard');
+        }
+      } else {
+        // Display error message
+        let errorMessage = result.error;
+        
+        // Provide user-friendly error messages
+        if (errorMessage.includes('email-already-in-use')) {
+          errorMessage = 'This email is already registered. Please login instead.';
+        } else if (errorMessage.includes('weak-password')) {
+          errorMessage = 'Password is too weak. Please use a stronger password.';
+        } else if (errorMessage.includes('invalid-email')) {
+          errorMessage = 'Invalid email address. Please check and try again.';
+        }
+        
+        setError(errorMessage);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      console.error(err);
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -27,6 +70,13 @@ function Signup() {
           <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
           <p className="text-gray-400">Join QuizzApp today</p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Role Toggle */}
         <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-xl">
@@ -61,6 +111,7 @@ function Signup() {
               placeholder="John Doe"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition"
               required
+              disabled={loading}
             />
           </div>
 
@@ -73,6 +124,7 @@ function Signup() {
               placeholder="your@email.com"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition"
               required
+              disabled={loading}
             />
           </div>
 
@@ -85,13 +137,17 @@ function Signup() {
               placeholder="••••••••"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition"
               required
+              disabled={loading}
+              minLength={6}
             />
+            <p className="text-xs text-gray-500 mt-1">At least 6 characters</p>
           </div>
 
           <button 
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105">
-            Sign Up as {role === 'student' ? 'Student' : 'Teacher'}
+            disabled={loading}
+            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+            {loading ? 'Creating Account...' : `Sign Up as ${role === 'student' ? 'Student' : 'Teacher'}`}
           </button>
         </form>
 

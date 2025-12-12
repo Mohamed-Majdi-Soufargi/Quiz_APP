@@ -1,17 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Brain } from 'lucide-react';
+import { login, getUserRole } from '../authService';
 
 function Login() {
   const navigate = useNavigate();
   const [role, setRole] = useState('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add Firebase auth logic here
-    console.log('Login:', { email, password, role });
+    setLoading(true);
+    setError('');
+
+    try {
+      // Login user
+      const result = await login(email, password);
+      
+      if (result.success) {
+        // Get user's role from database
+        const userRole = await getUserRole(result.user.uid);
+        
+        // Check if selected role matches stored role
+        if (userRole !== role) {
+          setError(`You registered as a ${userRole}. Please select the correct role.`);
+          setLoading(false);
+          return;
+        }
+
+        // Navigate based on role
+        if (role === 'teacher') {
+          navigate('/teacher-dashboard');
+        } else {
+          navigate('/student-dashboard');
+        }
+      } else {
+        // Display error message
+        setError(result.error || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      console.error(err);
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -26,6 +61,13 @@ function Login() {
           <h1 className="text-3xl font-bold text-white mb-2">Welcome Back!</h1>
           <p className="text-gray-400">Login to continue to QuizzApp</p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Role Toggle */}
         <div className="flex gap-2 mb-6 bg-white/5 p-1 rounded-xl">
@@ -60,6 +102,7 @@ function Login() {
               placeholder="your@email.com"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition"
               required
+              disabled={loading}
             />
           </div>
 
@@ -72,13 +115,15 @@ function Login() {
               placeholder="••••••••"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition"
               required
+              disabled={loading}
             />
           </div>
 
           <button 
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105">
-            Login as {role === 'student' ? 'Student' : 'Teacher'}
+            disabled={loading}
+            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+            {loading ? 'Logging in...' : `Login as ${role === 'student' ? 'Student' : 'Teacher'}`}
           </button>
         </form>
 
