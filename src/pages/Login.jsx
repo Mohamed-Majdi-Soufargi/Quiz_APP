@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Brain } from 'lucide-react';
-import { login, getUserRole } from '../authService';
+import { login, getUserRole } from '../services/authService';
 
 function Login() {
   const navigate = useNavigate();
