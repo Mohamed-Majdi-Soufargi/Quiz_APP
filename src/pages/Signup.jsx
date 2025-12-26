@@ -36,16 +36,19 @@ function Signup() {
           navigate('/student-dashboard');
         }
       } else {
-        // Display error message
+        // Display user-friendly error messages
         let errorMessage = result.error;
         
-        // Provide user-friendly error messages
         if (errorMessage.includes('email-already-in-use')) {
           errorMessage = 'This email is already registered. Please login instead.';
         } else if (errorMessage.includes('weak-password')) {
           errorMessage = 'Password is too weak. Please use a stronger password.';
         } else if (errorMessage.includes('invalid-email')) {
           errorMessage = 'Invalid email address. Please check and try again.';
+        } else if (errorMessage.includes('operation-not-allowed')) {
+          errorMessage = 'Email/password accounts are not enabled. Please contact support.';
+        } else if (errorMessage.includes('network-request-failed')) {
+          errorMessage = 'Network error. Please check your internet connection.';
         }
         
         setError(errorMessage);

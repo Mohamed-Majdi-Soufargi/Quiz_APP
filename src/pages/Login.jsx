@@ -38,8 +38,24 @@ function Login() {
           navigate('/student-dashboard');
         }
       } else {
-        // Display error message
-        setError(result.error || 'Login failed. Please check your credentials.');
+        // Display user-friendly error messages
+        let errorMessage = result.error || 'Login failed. Please check your credentials.';
+        
+        if (errorMessage.includes('user-not-found')) {
+          errorMessage = 'No account found with this email. Please sign up first.';
+        } else if (errorMessage.includes('wrong-password')) {
+          errorMessage = 'Incorrect password. Please try again.';
+        } else if (errorMessage.includes('invalid-email')) {
+          errorMessage = 'Invalid email format. Please check your email.';
+        } else if (errorMessage.includes('user-disabled')) {
+          errorMessage = 'This account has been disabled. Please contact support.';
+        } else if (errorMessage.includes('too-many-requests')) {
+          errorMessage = 'Too many failed attempts. Please try again later.';
+        } else if (errorMessage.includes('network-request-failed')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+        
+        setError(errorMessage);
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
