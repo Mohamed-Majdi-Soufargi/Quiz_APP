@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Zap, Trophy, Brain, Play } from 'lucide-react';
+import { Sparkles, Trophy, Brain, BookOpen } from 'lucide-react';
 
 function Home() {
   const navigate = useNavigate();
@@ -58,60 +58,36 @@ function Home() {
 
           {/* Main Heading */}
           <h1 className="text-7xl md:text-8xl font-black text-white mb-6 leading-tight">
-            Battle Your Brain
+            Test Your Knowledge
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 animate-gradient">
-              Win The Quiz
+              Ace Every Quiz
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-purple-200 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Create epic quizzes in seconds with AI, compete live with friends, and dominate the leaderboards 🏆
+          <p className="text-xl md:text-2xl text-purple-200 mb-20 max-w-3xl mx-auto leading-relaxed">
+            Create quizzes in seconds with AI, take interactive assessments, and track your progress 📚
           </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20">
-            <button className="group relative px-10 py-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl font-bold text-xl text-white shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 transition-all transform hover:scale-105 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative flex items-center justify-center gap-3">
-                <Play className="w-6 h-6" />
-                <div className="text-left">
-                  <div>Create Quiz</div>
-                  <div className="text-sm font-normal text-purple-200">For Teachers</div>
-                </div>
-              </div>
-            </button>
-
-            <button className="group relative px-10 py-6 bg-white/10 backdrop-blur-lg rounded-2xl font-bold text-xl text-white border-2 border-white/20 hover:bg-white/20 hover:border-purple-400 transition-all transform hover:scale-105">
-              <div className="flex items-center justify-center gap-3">
-                <Zap className="w-6 h-6 text-yellow-400" />
-                <div className="text-left">
-                  <div>Join Quiz</div>
-                  <div className="text-sm font-normal text-purple-200">Enter Code</div>
-                </div>
-              </div>
-            </button>
-          </div>
 
           {/* Features */}
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <div className="group relative p-8 bg-white/5 backdrop-blur-lg rounded-3xl border border-white/10 hover:bg-gradient-to-br hover:from-purple-600/30 hover:to-pink-600/30 hover:border-purple-400 transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/50">
               <div className="relative">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                  <Zap className="w-8 h-8 text-white" />
+                  <Brain className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-300 group-hover:to-pink-300 transition-all">Lightning Fast</h3>
-                <p className="text-purple-200 group-hover:text-white transition-all">Real-time sync across all devices. Everyone plays together, instantly.</p>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-300 group-hover:to-pink-300 transition-all">AI Quiz Generation</h3>
+                <p className="text-purple-200 group-hover:text-white transition-all">Generate quizzes instantly on any topic using advanced AI technology.</p>
               </div>
             </div>
 
             <div className="group relative p-8 bg-white/5 backdrop-blur-lg rounded-3xl border border-white/10 hover:bg-gradient-to-br hover:from-indigo-600/30 hover:to-purple-600/30 hover:border-indigo-400 transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/50">
               <div className="relative">
                 <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                  <Brain className="w-8 h-8 text-white" />
+                  <BookOpen className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-300 group-hover:to-purple-300 transition-all">AI Generated</h3>
-                <p className="text-purple-200 group-hover:text-white transition-all">Create unlimited quizzes on any topic with our smart AI assistant.</p>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-300 group-hover:to-purple-300 transition-all">Interactive Learning</h3>
+                <p className="text-purple-200 group-hover:text-white transition-all">Take quizzes with instant feedback and detailed explanations.</p>
               </div>
             </div>
 
@@ -120,8 +96,8 @@ function Home() {
                 <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                   <Trophy className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:to-purple-300 transition-all">Leaderboards</h3>
-                <p className="text-purple-200 group-hover:text-white transition-all">Compete with friends and climb to the top of global rankings.</p>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:to-purple-300 transition-all">Track Progress</h3>
+                <p className="text-purple-200 group-hover:text-white transition-all">Monitor your performance with detailed analytics and statistics.</p>
               </div>
             </div>
           </div>
@@ -135,7 +111,9 @@ function Home() {
             <p className="text-purple-300 text-sm">
               © 2025 QuizzApp
             </p>
-            
+            <p className="text-purple-300 text-sm">
+              Made by Adem Sghaier, Med Majdi Soufargi & Med Oueslati
+            </p>
           </div>
         </div>
       </div>
