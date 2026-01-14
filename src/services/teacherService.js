@@ -133,8 +133,6 @@ export const deleteQuiz = async (quizId, teacherId) => {
 
 // ==================== STUDENT MANAGEMENT ====================
 
-// Replace getTeacherStudents in teacherService.js
-
 export const getTeacherStudents = async (teacherId = null) => {
   try {
     if (teacherId) {
@@ -148,6 +146,14 @@ export const getTeacherStudents = async (teacherId = null) => {
         (assignment.studentIds || []).forEach(id => studentIds.add(id));
       });
       
+      // Fetch ALL submissions ONCE for efficiency
+      let allSubmissions = {};
+      const submissionsRef = ref(database, 'submissions');
+      const submissionsSnapshot = await get(submissionsRef);
+      if (submissionsSnapshot.exists()) {
+        allSubmissions = submissionsSnapshot.val();
+      }
+      
       // Fetch student details and calculate stats
       const students = [];
       for (const studentId of studentIds) {
@@ -157,41 +163,42 @@ export const getTeacherStudents = async (teacherId = null) => {
         if (snapshot.exists()) {
           const studentData = snapshot.val();
           
-          // Get all submissions for this student to calculate stats
-          const submissionsRef = ref(database, 'submissions');
-          const submissionsSnapshot = await get(submissionsRef);
-          
-          let studentStats = {
-            totalPoints: 0,
-            averageScore: 0,
-            completedAssignments: 0,
-            streak: 0,
-            lastActivityDate: new Date().toISOString()
-          };
-          
-          if (submissionsSnapshot.exists()) {
-            const allSubmissions = submissionsSnapshot.val();
-            const studentSubmissions = [];
-            
-            for (const [, submission] of Object.entries(allSubmissions)) {
-              if (submission.studentId === studentId) {
-                studentSubmissions.push(submission);
-              }
+          // Get submissions for this specific student
+          const studentSubmissions = [];
+          for (const [submissionId, submission] of Object.entries(allSubmissions)) {
+            if (submission.studentId === studentId) {
+              studentSubmissions.push({
+                ...submission,
+                id: submissionId
+              });
             }
+          }
+          
+          // Calculate stats from submissions
+          let totalPoints = 0;
+          let averageScore = 0;
+          let lastActivityDate = new Date().toISOString();
+          
+          if (studentSubmissions.length > 0) {
+            // Calculate total points - use score * points per question as base
+            // OR use earnedPoints if available, but ensure no duplicates
+            const validSubmissions = studentSubmissions.filter(s => s.score !== undefined);
             
-            if (studentSubmissions.length > 0) {
-              // Calculate stats from submissions
-              const scores = studentSubmissions.map(s => s.score || 0);
-              const totalPoints = studentSubmissions.reduce((sum, s) => sum + (s.earnedPoints || 0), 0);
-              const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+            if (validSubmissions.length > 0) {
+              // Calculate based on score percentage
+              totalPoints = validSubmissions.reduce((sum, s) => {
+                // Use earnedPoints if available, otherwise calculate from score
+                return sum + (s.earnedPoints || Math.round((s.score / 100) * 50)); // Assuming max 50 points per submission
+              }, 0);
               
-              studentStats = {
-                totalPoints: totalPoints,
-                averageScore: avgScore,
-                completedAssignments: studentSubmissions.length,
-                streak: studentData.stats?.streak || 0,
-                lastActivityDate: studentSubmissions[studentSubmissions.length - 1].submittedAt || new Date().toISOString()
-              };
+              const scores = validSubmissions.map(s => s.score || 0);
+              averageScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+              
+              // Get most recent submission date
+              const sorted = validSubmissions.sort((a, b) => 
+                new Date(b.submittedAt) - new Date(a.submittedAt)
+              );
+              lastActivityDate = sorted[0]?.submittedAt || new Date().toISOString();
             }
           }
           
@@ -200,12 +207,18 @@ export const getTeacherStudents = async (teacherId = null) => {
             name: studentData.name || 'Unknown',
             email: studentData.email || '',
             role: studentData.role || 'student',
-            stats: studentStats,
-            totalPoints: studentStats.totalPoints,
-            averageScore: studentStats.averageScore,
-            completedQuizzes: studentStats.completedAssignments,
-            streak: studentStats.streak,
-            lastActive: studentStats.lastActivityDate
+            totalPoints: totalPoints,
+            averageScore: averageScore,
+            completedQuizzes: studentSubmissions.length,
+            streak: studentData.stats?.streak || 0,
+            lastActive: lastActivityDate,
+            stats: {
+              totalPoints: totalPoints,
+              averageScore: averageScore,
+              completedAssignments: studentSubmissions.length,
+              streak: studentData.stats?.streak || 0,
+              lastActivityDate: lastActivityDate
+            }
           });
         }
       }
@@ -232,12 +245,12 @@ export const getTeacherStudents = async (teacherId = null) => {
               id,
               name: data.name || 'Unknown',
               email: data.email || '',
-              stats: stats,
               totalPoints: stats.totalPoints || 0,
               averageScore: stats.averageScore || 0,
               completedQuizzes: stats.completedAssignments || 0,
               streak: stats.streak || 0,
-              lastActive: stats.lastActivityDate || new Date().toISOString()
+              lastActive: stats.lastActivityDate || new Date().toISOString(),
+              stats: stats
             };
           });
         
