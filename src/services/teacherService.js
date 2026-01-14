@@ -133,6 +133,8 @@ export const deleteQuiz = async (quizId, teacherId) => {
 
 // ==================== STUDENT MANAGEMENT ====================
 
+// Replace getTeacherStudents in teacherService.js
+
 export const getTeacherStudents = async (teacherId = null) => {
   try {
     if (teacherId) {
@@ -146,7 +148,7 @@ export const getTeacherStudents = async (teacherId = null) => {
         (assignment.studentIds || []).forEach(id => studentIds.add(id));
       });
       
-      // Fetch student details
+      // Fetch student details and calculate stats
       const students = [];
       for (const studentId of studentIds) {
         const userRef = ref(database, `users/${studentId}`);
@@ -154,19 +156,63 @@ export const getTeacherStudents = async (teacherId = null) => {
         
         if (snapshot.exists()) {
           const studentData = snapshot.val();
+          
+          // Get all submissions for this student to calculate stats
+          const submissionsRef = ref(database, 'submissions');
+          const submissionsSnapshot = await get(submissionsRef);
+          
+          let studentStats = {
+            totalPoints: 0,
+            averageScore: 0,
+            completedAssignments: 0,
+            streak: 0,
+            lastActivityDate: new Date().toISOString()
+          };
+          
+          if (submissionsSnapshot.exists()) {
+            const allSubmissions = submissionsSnapshot.val();
+            const studentSubmissions = [];
+            
+            for (const [, submission] of Object.entries(allSubmissions)) {
+              if (submission.studentId === studentId) {
+                studentSubmissions.push(submission);
+              }
+            }
+            
+            if (studentSubmissions.length > 0) {
+              // Calculate stats from submissions
+              const scores = studentSubmissions.map(s => s.score || 0);
+              const totalPoints = studentSubmissions.reduce((sum, s) => sum + (s.earnedPoints || 0), 0);
+              const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+              
+              studentStats = {
+                totalPoints: totalPoints,
+                averageScore: avgScore,
+                completedAssignments: studentSubmissions.length,
+                streak: studentData.stats?.streak || 0,
+                lastActivityDate: studentSubmissions[studentSubmissions.length - 1].submittedAt || new Date().toISOString()
+              };
+            }
+          }
+          
           students.push({
             id: studentId,
-            ...studentData,
-            completedQuizzes: studentData.stats?.completedAssignments || 0,
-            averageScore: studentData.stats?.averageScore || 0,
-            lastActive: studentData.stats?.lastActivityDate || new Date().toISOString()
+            name: studentData.name || 'Unknown',
+            email: studentData.email || '',
+            role: studentData.role || 'student',
+            stats: studentStats,
+            totalPoints: studentStats.totalPoints,
+            averageScore: studentStats.averageScore,
+            completedQuizzes: studentStats.completedAssignments,
+            streak: studentStats.streak,
+            lastActive: studentStats.lastActivityDate
           });
         }
       }
       
       return { success: true, data: students };
     } else {
-      // Get all students (for dropdown/selection)
+      // Get all students
       const usersRef = ref(database, 'users');
       const snapshot = await get(usersRef);
       
@@ -174,7 +220,26 @@ export const getTeacherStudents = async (teacherId = null) => {
         const users = snapshot.val();
         const students = Object.entries(users)
           .filter(([_, user]) => user.role === 'student')
-          .map(([id, data]) => ({ id, ...data }));
+          .map(([id, data]) => {
+            const stats = data.stats || {
+              totalPoints: 0,
+              averageScore: 0,
+              completedAssignments: 0,
+              streak: 0
+            };
+            
+            return {
+              id,
+              name: data.name || 'Unknown',
+              email: data.email || '',
+              stats: stats,
+              totalPoints: stats.totalPoints || 0,
+              averageScore: stats.averageScore || 0,
+              completedQuizzes: stats.completedAssignments || 0,
+              streak: stats.streak || 0,
+              lastActive: stats.lastActivityDate || new Date().toISOString()
+            };
+          });
         
         return { success: true, data: students };
       }

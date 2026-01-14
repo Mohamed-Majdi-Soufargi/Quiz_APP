@@ -51,7 +51,7 @@ const TeacherDashboard = () => {
       const quizzesResult = await getTeacherQuizzes(userId);
       if (quizzesResult.success) setQuizzes(quizzesResult.data);
 
-      const studentsResult = await getTeacherStudents();
+      const studentsResult = await getTeacherStudents(userId);
       if (studentsResult.success) setStudents(studentsResult.data);
 
       const submissionsResult = await getRecentSubmissions(userId);
